@@ -1,0 +1,42 @@
+# Builds the Windows installer in the cloud - no local setup needed.
+# Push this project to GitHub -> Actions tab -> "Build Windows installer" -> download the artifact.
+name: Build Windows installer
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+
+      - name: Install Tesseract OCR + Inno Setup
+        run: |
+          choco install tesseract innosetup -y --no-progress
+          echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Extra OCR languages (Urdu, Arabic, Hindi)
+        shell: pwsh
+        run: |
+          $dir = "C:\Program Files\Tesseract-OCR\tessdata"
+          foreach ($l in "urd","ara","hin") {
+            Invoke-WebRequest "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main/$l.traineddata" -OutFile "$dir\$l.traineddata"
+          }
+
+      - name: Run tests
+        run: |
+          pip install -r requirements.txt pytest
+          python -m pytest -q tests
+
+      - name: Build
+        shell: cmd
+        run: build_windows.bat
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ImagePDF-Setup
+          path: installer_output/ImagePDF-Setup.exe
