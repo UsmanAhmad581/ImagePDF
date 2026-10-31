@@ -5,15 +5,25 @@ The app **reads the text** on each image, **finds the page numbers**, **puts the
 in the right order**, and exports a **searchable PDF**.
 
 ## Features
-- Add images or whole folders (also drag & drop from Explorer)
+- Add images or whole folders (also drag & drop from Explorer); PNG, JPG, TIFF, BMP, WebP
+  - multi-page TIFFs (scanner output) become one card per page
+  - files that are skipped (unsupported type such as HEIC/GIF/PDF, duplicates) are listed, never dropped silently
 - OCR with Tesseract (English + any installed language, e.g. `urd`, `ara`, `hin`)
-- Auto-order by detected page number ("Page 5", "- 5 -", "5 of 20", bare number in header/footer)
+- Auto-order by detected page number ("Page 5", "صفحہ 5", "पृष्ठ 5", "- 5 -", "5 of 20", bare 1–3 digit number in header/footer; prices, percentages and years are ignored)
   - pages without a number keep their file-name position and are flagged orange
   - falls back to natural file-name order (img2 before img10)
 - Thumbnail cards: drag to reorder, ◀ ▶ move, ⟳ rotate, ✕ remove
+  - **Undo (Ctrl+Z)** restores the previous page order / removed pages (up to 30 steps); Auto-order
+    asks before replacing a hand-made order with a file-name order
+  - pages are locked while OCR or PDF export is running (Cancel first), so a page can't change mid-job
 - Preview + recognised text for every page; export all text to `.txt`
 - Optional auto-fix of sideways pages
 - PDF: searchable text layer, "Fit to image" or "A4 page" sizing, progress + cancel
+  - the text layer comes from the "Read text" pass (no second OCR), so a searchable PDF is about
+    the same size as a plain one; if you skip "Read text", pages are read once while exporting
+  - an unreadable image is skipped and reported instead of aborting the whole export
+- Edits made in the "Recognised text" box are kept and used by "Export text" (the PDF's hidden
+  search layer is the original OCR)
 - Light / Dark / System theme, settings remembered
 
 ## Get the installer (Windows)
@@ -25,7 +35,7 @@ in the right order**, and exports a **searchable PDF**.
 
 **Option B – build on your PC:**
 1. Install Python 3.10+, [Tesseract (UB-Mannheim)](https://github.com/UB-Mannheim/tesseract/wiki),
-   and [Inno Setup 6](https://jrsoftware.org/isinfo.php).
+   and [Inno Setup 6.3 or later](https://jrsoftware.org/isinfo.php).
 2. Double-click `build_windows.bat`.
 3. Installer appears in `installer_output\ImagePDF-Setup.exe`.
 
@@ -39,7 +49,8 @@ python main.py
 ## More OCR languages
 Download `<lang>.traineddata` from https://github.com/tesseract-ocr/tessdata_fast and put it in
 `<install folder>\tesseract\tessdata\`. Restart the app; it appears in the language box.
-Use `eng+urd` for mixed-language pages.
+Use `eng+urd` for mixed-language pages: type it in the language box and press Enter. Names that
+are not installed are rejected, and changing the language clears the text read so far.
 
 ## Tests
 ```
@@ -54,6 +65,7 @@ ui/app.py          window (customtkinter)
 core/pagenum.py    page-number detection + ordering
 core/ocr.py        Tesseract helpers
 core/pdfbuilder.py PDF creation
+core/textlayer.py  invisible OCR text layer for PDF pages
 core/paths.py      Tesseract discovery + settings
-tests/             unit tests
+tests/             unit tests (test_ui.py needs a display; skipped without one)
 ```

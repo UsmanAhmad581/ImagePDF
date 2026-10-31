@@ -17,7 +17,8 @@ jobs:
       - name: Install Tesseract OCR + Inno Setup
         run: |
           choco install tesseract innosetup -y --no-progress
-          echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Append
+          "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          "C:\Program Files\Tesseract-OCR" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
       - name: Extra OCR languages (Urdu, Arabic, Hindi)
         shell: pwsh
@@ -28,8 +29,11 @@ jobs:
           }
 
       - name: Run tests
+        env:
+          REQUIRE_OCR: "1"      # fail instead of silently skipping the OCR tests
         run: |
           pip install -r requirements.txt pytest
+          tesseract --version
           python -m pytest -q tests
 
       - name: Build

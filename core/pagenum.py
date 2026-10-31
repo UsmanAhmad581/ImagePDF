@@ -5,10 +5,25 @@ from typing import List, Optional, Tuple
 
 from .models import PageItem
 
+# Decoration allowed around a page number: spaces, dashes, dots, bullets, brackets, pipes...
+# Deliberately NOT currency / percent / hash / plus signs, so "$250", "10%", "#5", "€45"
+# are not mistaken for pages.  (\d also matches Arabic-Indic, Persian and Devanagari digits.)
+_SEP = r"[\s\-–—~•·.*_|:\[\]()<>«»]*"
+# "page" in English, Urdu, Arabic, Persian and Hindi (p / pg / ص / पृ are the short forms)
+_KW_LATIN = r"(?:page|pg|p)"
+_KW_OTHER = r"(?:صفحہ|صفحة|صفحه|ص|पृष्ठ|पेज|पृ)"
+_OF = r"(?:of|/|از|من)"
+
 _PATTERNS = [
-    re.compile(r"^\W*(?:page|pg|p)\.?\s*(\d{1,4})(?:\s*(?:of|/)\s*\d{1,4})?\W*$", re.I),
-    re.compile(r"^\W*(\d{1,4})\s*(?:of|/)\s*\d{1,4}\W*$", re.I),
-    re.compile(r"^\W*[-–—~•\[\(]*\s*(\d{1,4})\s*[-–—~•\]\)]*\W*$"),
+    # "Page 5", "p. 5", "Page 5 of 20", "صفحہ 5", "पृष्ठ 5"
+    re.compile(rf"^{_SEP}(?:{_KW_LATIN}|{_KW_OTHER})\.?\s*(\d{{1,4}})"
+               rf"(?:\s*{_OF}\s*(\d{{1,4}}))?{_SEP}$", re.I),
+    # "5 of 20", "5/20"
+    re.compile(rf"^{_SEP}(\d{{1,4}})\s*{_OF}\s*(\d{{1,4}}){_SEP}$", re.I),
+    # bare number: "5", "- 5 -", "(5)"; at most 3 digits (1800 / 2101 are not pages)
+    re.compile(rf"^{_SEP}(\d{{1,3}}){_SEP}$"),
+    # right-to-left OCR order: "5 صفحہ"
+    re.compile(rf"^{_SEP}(\d{{1,4}})\s*{_KW_OTHER}{_SEP}$"),
 ]
 
 
@@ -29,8 +44,8 @@ def detect_page_number(text: str) -> Optional[int]:
             m = pat.match(line)
             if m:
                 n = int(m.group(1))
-                if i == 2 and 1900 <= n <= 2100:   # a bare year, not a page
-                    continue
+                if i in (0, 1) and m.lastindex == 2 and int(m.group(2)) < n:
+                    continue                       # "12/05" is a date, not page 12 of 5
                 if n > 0:
                     return n
     return None

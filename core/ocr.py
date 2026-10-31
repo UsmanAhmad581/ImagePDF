@@ -1,9 +1,13 @@
 """OCR helpers built on Tesseract."""
+import os
+import subprocess
+import tempfile
 from typing import List, Optional, Tuple
 
 import pytesseract
 from PIL import Image, ImageOps
 
+from . import textlayer
 from .pagenum import detect_page_number
 
 MAX_OCR_SIDE = 3500
@@ -51,3 +55,35 @@ def read_page(img: Image.Image, lang: str = "eng") -> Tuple[str, Optional[int]]:
     """OCR one image -> (text, detected_page_number)."""
     text = pytesseract.image_to_string(_prepare(img), lang=lang)
     return text, detect_page_number(text)
+
+
+def read_page_full(img: Image.Image, lang: str = "eng") -> Tuple[str, Optional[int], Optional[bytes]]:
+    """OCR one image once -> (text, detected_page_number, invisible_text_layer).
+
+    A single Tesseract run writes both the plain text and a PDF text layer, so the PDF
+    export can reuse the layer instead of running OCR again.  The layer is None if
+    Tesseract could not produce one (the text is still returned).
+    """
+    gray = _prepare(img)
+    with tempfile.TemporaryDirectory() as d:
+        src, base = os.path.join(d, "in.png"), os.path.join(d, "out")
+        gray.save(src)
+        kw = {}
+        if os.name == "nt":                       # no flashing console window
+            kw["creationflags"] = subprocess.CREATE_NO_WINDOW
+        proc = subprocess.run(
+            [pytesseract.pytesseract.tesseract_cmd, src, base, "-l", lang, "--dpi", "300",
+             "txt", "pdf"], capture_output=True, **kw)
+        if not os.path.exists(base + ".txt"):
+            msg = proc.stderr.decode("utf-8", "replace").strip() or "Tesseract failed"
+            raise RuntimeError(msg)
+        with open(base + ".txt", encoding="utf-8") as f:
+            text = f.read().replace("\f", "").strip()
+        layer = None
+        if os.path.exists(base + ".pdf"):
+            try:
+                with open(base + ".pdf", "rb") as f:
+                    layer = textlayer.strip_image(f.read())
+            except Exception:
+                layer = None
+    return text, detect_page_number(text), layer

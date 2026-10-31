@@ -14,6 +14,21 @@ def base_dir() -> str:
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def norm_path(p: str, pathmod=os.path) -> str:
+    """Canonical form of a file path, used to recognise the same file added twice.
+
+    The Windows file dialog returns ``C:/x/a.jpg`` while a folder scan gives ``C:/x\\a.jpg``;
+    case differs too, and a path may reach the file through a symlink / junction / 8.3 name.
+    All of these must compare equal. (`pathmod` lets tests run the Windows rules anywhere.)
+    """
+    p = pathmod.abspath(p)
+    try:
+        p = pathmod.realpath(p)
+    except (OSError, ValueError):
+        pass
+    return pathmod.normcase(p)
+
+
 def config_dir() -> str:
     root = os.environ.get("APPDATA") or os.path.expanduser("~/.config")
     path = os.path.join(root, APP_NAME)
