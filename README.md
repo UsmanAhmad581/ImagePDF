@@ -5,6 +5,7 @@ The app **reads the text** on each image, **finds the page numbers**, **puts the
 in the right order**, and exports a **searchable PDF**.
 
 <img width="1607" height="781" alt="Screenshot 2026-10-31 105232" src="https://github.com/user-attachments/assets/448fa175-1a7b-4635-92b8-7b37c538bd18" />
+<img width="1917" height="1020" alt="Screenshot 2026-11-01 191454" src="https://github.com/user-attachments/assets/bc66fb95-f2b4-4c6e-aafe-1d9a51afb331" />
 
 ## Features
 - Add images or whole folders (also drag & drop from Explorer); PNG, JPG, TIFF, BMP, WebP
