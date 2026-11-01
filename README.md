@@ -1,3 +1,4 @@
+<img width="1917" height="1028" alt="Screenshot 2026-11-01 191526" src="https://github.com/user-attachments/assets/f1ab9d69-fa88-41d9-afc2-9fe1fe427e42" />
 # Image → PDF  (OCR page organiser)
 
 Turn photos / scans of document pages into one clean PDF.
