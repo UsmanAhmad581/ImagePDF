@@ -28,7 +28,8 @@ in the right order**, and exports a **searchable PDF**.
   search layer is the original OCR)
 - Light / Dark / System theme, settings remembered
 
-- 
+  <img width="1917" height="1018" alt="Screenshot 2026-11-01 191438" src="https://github.com/user-attachments/assets/19cf8f33-aa6f-46f9-86a4-0d94f44d0137" />
+
 
 ## Get the installer (Windows)
 **Option A – cloud build, nothing to install:**
