@@ -4,6 +4,8 @@ Turn photos / scans of document pages into one clean PDF.
 The app **reads the text** on each image, **finds the page numbers**, **puts the pages
 in the right order**, and exports a **searchable PDF**.
 
+<img width="1607" height="781" alt="Screenshot 2026-10-31 105232" src="https://github.com/user-attachments/assets/448fa175-1a7b-4635-92b8-7b37c538bd18" />
+
 ## Features
 - Add images or whole folders (also drag & drop from Explorer); PNG, JPG, TIFF, BMP, WebP
   - multi-page TIFFs (scanner output) become one card per page
@@ -25,6 +27,8 @@ in the right order**, and exports a **searchable PDF**.
 - Edits made in the "Recognised text" box are kept and used by "Export text" (the PDF's hidden
   search layer is the original OCR)
 - Light / Dark / System theme, settings remembered
+
+- 
 
 ## Get the installer (Windows)
 **Option A – cloud build, nothing to install:**
